@@ -33,26 +33,37 @@ def show_sales():
 
 
 # Route to handle adding a new row
-@sales.route('/', methods=['GET', 'POST'])
+@sales.route('/add_sales_data', methods=['GET', 'POST'])
 def add_sales_data():
+    connection = get_db()
     if request.method == 'POST':
         monthly_amount = request.form['monthly_amount']
         date = request.form['date']
         region_id = request.form['region_id']
 
-        connection = get_db()
         query = "INSERT INTO sales_data (monthly_amount, date, region_id) VALUES (%s, %s, %s)"
         try:
             with connection.cursor() as cursor:
                 cursor.execute(query, (monthly_amount, date, region_id))
             connection.commit()
-            flash("New sales data added successfully!", "success")
+            flash("Sales data added successfully!", "success")
         except Exception as e:
             flash("An error occurred while adding sales data.", "danger")
             print(e)
         return redirect(url_for('sales.show_sales'))
 
-    return render_template("add_sales_data.html")
+    # Fetch the list of regions to populate the dropdown
+    query = "SELECT region_id, region_name FROM regions"
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            regions = cursor.fetchall()
+    except Exception as e:
+        flash("An error occurred while accessing the regions data.", "danger")
+        print(e)
+        regions = []
+
+    return render_template("add_sales_data.html", regions=regions)
 
 
 # Route to handle updating a row
