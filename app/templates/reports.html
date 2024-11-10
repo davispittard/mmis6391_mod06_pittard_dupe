@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h2>Sales Reports</h2>
+        
+        <h3>Total Sales by Region</h3>
+        <div>
+            {{ total_sales_by_region | safe }}
+        </div>
+        
+        <h3>Monthly Sales Trends</h3>
+        <div>
+            {{ monthly_sales_trends | safe }}
+        </div>
+        
+        <h3>Top Performing Region</h3>
+        <div>
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Region Name</th>
+                        <th>Total Sales</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ top_performing_region['region_name'] }}</td>
+                        <td>{{ top_performing_region['total_sales'] }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

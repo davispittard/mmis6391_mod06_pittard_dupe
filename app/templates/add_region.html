@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h2>Add New Region</h2>
+        <form method="POST" action="{{ url_for('regions.add_region') }}">
+            <div class="form-group">
+                <label for="region_name">Region Name</label>
+                <input type="text" class="form-control" id="region_name" name="region_name" required>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">Add Region</button>
+        </form>
+    </div>
+{% endblock %}
