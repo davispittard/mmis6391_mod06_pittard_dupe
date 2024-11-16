@@ -1,4 +1,7 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+import matplotlib
+matplotlib.use('Agg')
+
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from app.db_connect import get_db
 from app.functions import calculate_total_sales_by_region, analyze_monthly_sales_trends, identify_top_performing_region
 import pandas as pd
@@ -52,18 +55,20 @@ def add_sales_data():
             print(e)
         return redirect(url_for('sales.show_sales'))
 
-    # Fetch the list of regions to populate the dropdown
+    return render_template("add_sales_data.html")
+
+
+@sales.route('/get_regions', methods=['GET'])
+def get_regions():
+    connection = get_db()
     query = "SELECT region_id, region_name FROM regions"
     try:
         with connection.cursor() as cursor:
             cursor.execute(query)
             regions = cursor.fetchall()
+        return jsonify(regions)
     except Exception as e:
-        flash("An error occurred while accessing the regions data.", "danger")
-        print(e)
-        regions = []
-
-    return render_template("add_sales_data.html", regions=regions)
+        return jsonify({"error": str(e)}), 500
 
 
 # Route to handle updating a row
@@ -120,6 +125,7 @@ def delete_sales_data(sales_data_id):
         print(e)
     return redirect(url_for('sales.show_sales'))
 
+
 # New route to display reports
 @sales.route('/reports')
 def show_reports():
@@ -132,7 +138,6 @@ def show_reports():
                            monthly_sales_trends=monthly_sales_trends.to_html(classes='dataframe table table-striped table-bordered', index=False, escape=False),
                            top_performing_region=top_performing_region)
 
-
 @sales.route('/visualizations')
 def show_visualizations():
     # Generate total sales by region chart
@@ -140,8 +145,8 @@ def show_visualizations():
     print("Total Sales by Region DataFrame:")
     print(total_sales_by_region)
     if not total_sales_by_region.empty and 'total_sales' in total_sales_by_region.columns:
-        fig1, ax1 = plt.subplots(figsize=(10, 6))
-        total_sales_by_region.plot(kind='bar', x='region_name', y='total_sales', legend=False, ax=ax1)
+        fig1, ax1 = plt.subplots(figsize=(10, 6))  # Original figure size
+        ax1.bar(total_sales_by_region['region_name'], total_sales_by_region['total_sales'])
         ax1.set_title('Total Sales by Region')
         ax1.set_xlabel('Region')
         ax1.set_ylabel('Total Sales')
@@ -156,8 +161,8 @@ def show_visualizations():
     print("Monthly Sales Trends DataFrame:")
     print(monthly_sales_trends)
     if not monthly_sales_trends.empty and 'total_sales' in monthly_sales_trends.columns:
-        fig2, ax2 = plt.subplots(figsize=(10, 6))
-        monthly_sales_trends.plot(kind='line', x='month', y='total_sales', legend=False, ax=ax2)
+        fig2, ax2 = plt.subplots(figsize=(10, 6))  # Original figure size
+        ax2.plot(monthly_sales_trends['month'], monthly_sales_trends['total_sales'])
         ax2.set_title('Monthly Sales Trends')
         ax2.set_xlabel('Month')
         ax2.set_ylabel('Total Sales')
@@ -166,6 +171,10 @@ def show_visualizations():
     else:
         monthly_sales_trends_html = None
 
+    # Identify top performing region
+    top_performing_region = identify_top_performing_region()
+
     return render_template("visualizations.html",
                            total_sales_by_region_html=total_sales_by_region_html,
-                           monthly_sales_trends_html=monthly_sales_trends_html)
+                           monthly_sales_trends_html=monthly_sales_trends_html,
+                           top_performing_region=top_performing_region)

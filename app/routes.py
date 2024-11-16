@@ -3,4 +3,4 @@ from . import app
 
 @app.route('/')
 def home():
-    return render_template("regions.html")
+    return render_template("add_sales_data.html")

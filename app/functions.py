@@ -8,6 +8,7 @@ def calculate_total_sales_by_region():
         FROM sales_data sd
         JOIN regions r ON sd.region_id = r.region_id
         GROUP BY r.region_name
+        ORDER BY r.region_name
     """
     with connection.cursor() as cursor:
         cursor.execute(query)

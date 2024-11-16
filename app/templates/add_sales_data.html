@@ -1,26 +1,41 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Add Sales Data</h1>
     <div class="container mt-4">
-        <form action="{{ url_for('sales.add_sales_data') }}" method="post">
+        <h2>Add Sales Data</h2>
+        <form method="POST" action="/add_sales_data">
+            <div class="form-group">
+                <label for="region">Region Name:</label>
+                <select id="region" name="region" class="form-control">
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+            </div>
             <div class="form-group">
                 <label for="monthly_amount">Monthly Amount</label>
-                <input type="number" step="0.0001" class="form-control" id="monthly_amount" name="monthly_amount" required>
+                <input type="number" class="form-control" id="monthly_amount" name="monthly_amount" required>
             </div>
             <div class="form-group">
                 <label for="date">Date</label>
                 <input type="date" class="form-control" id="date" name="date" required>
             </div>
-            <div class="form-group">
-                <label for="region_id">Region</label>
-                <select class="form-control" id="region_id" name="region_id" required>
-                    {% for region in regions %}
-                        <option value="{{ region.region_id }}">{{ region.region_name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <button type="submit" class="btn btn-primary">Add Sales Data</button>
+            <button type="submit" class="btn btn-primary mt-3">Submit</button>
         </form>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/get_regions')
+                .then(response => response.json())
+                .then(data => {
+                    const regionSelect = document.getElementById('region');
+                    data.forEach(region => {
+                        const option = document.createElement('option');
+                        option.value = region.region_id;
+                        option.textContent = region.region_name;
+                        regionSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching regions:', error));
+        });
+    </script>
 {% endblock %}
